@@ -30,6 +30,8 @@ import nl.knaw.dans.lib.dataverse.model.file.DataFile;
 import nl.knaw.dans.lib.dataverse.model.file.FileMeta;
 import nl.knaw.dans.verifydataset.api.RuleResponse;
 import nl.knaw.dans.verifydataset.api.VerifyRequest;
+import org.apache.http.entity.StringEntity;
+import org.apache.http.message.BasicHttpResponse;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -39,6 +41,7 @@ import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.net.http.HttpResponse;
 import java.util.HashMap;
 import java.util.List;
@@ -78,7 +81,7 @@ public class VerifyResourceTest {
                 var lv = new DatasetLatestVersion();
                 lv.setLatestVersion(dv);
 
-                return new DataverseHttpResponse<>(null, new ObjectMapper(), DatasetLatestVersion.class) {
+                return new DataverseHttpResponse<>(mockResponse(), new ObjectMapper(), DatasetLatestVersion.class) {
 
                     @Override
                     public DatasetLatestVersion getData() {
@@ -164,7 +167,7 @@ public class VerifyResourceTest {
 
             @Override
             public DataverseHttpResponse<DatasetVersion> getVersion() throws IOException {
-                return new DataverseHttpResponse<>(null, new ObjectMapper(), DatasetVersion.class) {
+                return new DataverseHttpResponse<>(mockResponse(), new ObjectMapper(), DatasetVersion.class) {
 
                     @Override
                     public DatasetVersion getData() {
@@ -175,5 +178,11 @@ public class VerifyResourceTest {
         };
         Mockito.doReturn(datasetApi)
             .when(dataverse).dataset(Mockito.any(String.class));
+    }
+
+    private BasicHttpResponse mockResponse() throws UnsupportedEncodingException {
+        BasicHttpResponse response = new BasicHttpResponse(null, 200, "");
+        response.setEntity(new StringEntity(""));
+        return response;
     }
 }
