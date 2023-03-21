@@ -22,7 +22,7 @@ import nl.knaw.dans.lib.dataverse.BasicFileAccessApi;
 import nl.knaw.dans.lib.dataverse.DatasetApi;
 import nl.knaw.dans.lib.dataverse.DataverseClient;
 import nl.knaw.dans.lib.dataverse.DataverseException;
-import nl.knaw.dans.lib.dataverse.DataverseResponse;
+import nl.knaw.dans.lib.dataverse.DataverseHttpResponse;
 import nl.knaw.dans.lib.dataverse.model.dataset.DatasetLatestVersion;
 import nl.knaw.dans.lib.dataverse.model.dataset.DatasetVersion;
 import nl.knaw.dans.lib.dataverse.model.dataset.MetadataBlock;
@@ -50,7 +50,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 @ExtendWith(DropwizardExtensionsSupport.class)
 public class VerifyResourceTest {
 
-    private DataverseClient dataverse = Mockito.mock(DataverseClient.class);
+    private final DataverseClient dataverse = Mockito.mock(DataverseClient.class);
     private final ResourceExtension EXT = ResourceExtension.builder()
         .addResource(new VerifyResource(dataverse, loadDistConfig()))
         .build();
@@ -66,8 +66,7 @@ public class VerifyResourceTest {
         var datasetApi = new DatasetApi(null, "", false) {
 
             @Override
-            public DataverseResponse<DatasetLatestVersion> getLatestVersion() {
-                HashMap<String, MetadataBlock> map = new HashMap<>();
+            public DataverseHttpResponse<DatasetLatestVersion> getLatestVersion() throws IOException {
                 var df = new DataFile();
                 df.setId(999);
                 df.setContentType("application/xml");
@@ -79,7 +78,7 @@ public class VerifyResourceTest {
                 var lv = new DatasetLatestVersion();
                 lv.setLatestVersion(dv);
 
-                return new DataverseResponse<>("", new ObjectMapper(), DatasetVersion.class) {
+                return new DataverseHttpResponse<>(null, new ObjectMapper(), DatasetLatestVersion.class) {
 
                     @Override
                     public DatasetLatestVersion getData() {
@@ -164,8 +163,8 @@ public class VerifyResourceTest {
         var datasetApi = new DatasetApi(null, "", false) {
 
             @Override
-            public DataverseResponse<DatasetVersion> getVersion() {
-                return new DataverseResponse<>("", new ObjectMapper(), DatasetVersion.class) {
+            public DataverseHttpResponse<DatasetVersion> getVersion() throws IOException {
+                return new DataverseHttpResponse<>(null, new ObjectMapper(), DatasetVersion.class) {
 
                     @Override
                     public DatasetVersion getData() {
