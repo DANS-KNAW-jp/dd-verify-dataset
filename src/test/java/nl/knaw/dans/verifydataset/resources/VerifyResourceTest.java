@@ -41,7 +41,6 @@ import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.net.http.HttpResponse;
 import java.util.HashMap;
 import java.util.List;
@@ -81,13 +80,7 @@ public class VerifyResourceTest {
                 var lv = new DatasetLatestVersion();
                 lv.setLatestVersion(dv);
 
-                return new DataverseHttpResponse<>(mockResponse(), new ObjectMapper(), DatasetLatestVersion.class) {
-
-                    @Override
-                    public DatasetLatestVersion getData() {
-                        return lv;
-                    }
-                };
+                return mockDataverseHttpResponse(lv);
             }
         };
         // Mockito does not like the generic method
@@ -167,22 +160,22 @@ public class VerifyResourceTest {
 
             @Override
             public DataverseHttpResponse<DatasetVersion> getVersion() throws IOException {
-                return new DataverseHttpResponse<>(mockResponse(), new ObjectMapper(), DatasetVersion.class) {
-
-                    @Override
-                    public DatasetVersion getData() {
-                        return dv;
-                    }
-                };
+                return mockDataverseHttpResponse(dv);
             }
         };
         Mockito.doReturn(datasetApi)
             .when(dataverse).dataset(Mockito.any(String.class));
     }
 
-    private BasicHttpResponse mockResponse() throws UnsupportedEncodingException {
-        BasicHttpResponse response = new BasicHttpResponse(null, 200, "");
-        response.setEntity(new StringEntity(""));
-        return response;
+    private <D> DataverseHttpResponse<D> mockDataverseHttpResponse(D data) throws IOException {
+        BasicHttpResponse basicHttpResponse = new BasicHttpResponse(null, 200, "");
+        basicHttpResponse.setEntity(new StringEntity(""));
+        return new DataverseHttpResponse<>(basicHttpResponse, new ObjectMapper(), DatasetVersion.class) {
+
+            @Override
+            public D getData() {
+                return data;
+            }
+        };
     }
 }
